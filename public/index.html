@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoLnk Mailer</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <div>
+          <div class="brand-name">NoLnk Mailer</div>
+          <div class="brand-sub">mail dashboard</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <a class="nav-item" href="#panel"      data-screen="panel"><span class="nav-ico">▤</span> Panel</a>
+        <a class="nav-item" href="#listeler"   data-screen="listeler"><span class="nav-ico">≣</span> Listeler</a>
+        <a class="nav-item" href="#kisiler"    data-screen="kisiler"><span class="nav-ico">◉</span> Kişiler</a>
+        <a class="nav-item" href="#sablonlar"  data-screen="sablonlar"><span class="nav-ico">◱</span> Şablonlar</a>
+        <a class="nav-item" href="#imzalar"    data-screen="imzalar"><span class="nav-ico">✎</span> İmzalar</a>
+        <a class="nav-item" href="#gonder"     data-screen="gonder"><span class="nav-ico">➤</span> Gönder</a>
+        <a class="nav-item" href="#kuyruk"     data-screen="kuyruk"><span class="nav-ico">☰</span> Kuyruk</a>
+        <a class="nav-item" href="#balancer"   data-screen="balancer"><span class="nav-ico">⚖</span> Balancer</a>
+        <a class="nav-item" href="#gonderilmis" data-screen="gonderilmis"><span class="nav-ico">✓</span> Gönderilmiş</a>
+        <a class="nav-item" href="#gecmis"     data-screen="gecmis"><span class="nav-ico">↻</span> Geçmiş</a>
+        <a class="nav-item" href="#ayarlar"    data-screen="ayarlar"><span class="nav-ico">⚙</span> Ayarlar</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="prov-line"><span class="dot dot-muted" id="provDotResend"></span> Resend: <span id="provResend" class="muted">—</span></div>
+        <div class="prov-line"><span class="dot dot-muted" id="provDotSmtp"></span> SMTP: <span id="provSmtp" class="muted">—</span></div>
+        <div style="opacity:.6">yalnız localhost · :5980</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="view" class="view"></div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

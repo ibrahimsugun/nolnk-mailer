@@ -1,0 +1,76 @@
+# docker-compose.yml — NoLnk Mailer (Express + SQLite) üretim servisi + watchdog.
+# NoLnk/BeyLink deseniyle aynı: uygulama + kendi bekçisi, kademeli/sağlık-koşullu açılış.
+# Çalıştırma: docker compose up --build -d   (bu klasörün .env'i otomatik okunur)
+#
+# GÜVENLİK: Panel host'a AÇILMAZ (ports YOK). Yalnız iç ağdan + X-Panel-Token ile erişilir.
+# Sırlar ($dir/.env): PANEL_TOKEN, RESEND_API_KEY, SMTP_*  (git'e girmez).
+
+services:
+  # --- MAILER (Express + better-sqlite3) ---
+  mailer:
+    build:
+      context: .
+      dockerfile: mailer.Dockerfile
+    container_name: nolnk-mailer
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=5980
+      # Docker'da container ağına bağlan (host'a değil). Panel token korur.
+      - BIND_HOST=0.0.0.0
+      # Panel API auth — TANIMSIZSA compose başlatmaz (fail-fast; auth'suz ağa açılmayı önler).
+      - PANEL_TOKEN=${PANEL_TOKEN:?PANEL_TOKEN zorunludur - nolnk-mailer/.env icinde tanimla}
+      # SQLite kalıcılığı (volume)
+      - MAILER_DB_PATH=/data/mailer.sqlite
+      # E-posta sağlayıcıları (.env'den; NoLnk backend'iyle aynı değerler)
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM=${RESEND_FROM:-NoLnk <info@nolnk.net>}
+      - SMTP_HOST=${SMTP_HOST:-mail.privateemail.com}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_SECURE=${SMTP_SECURE:-true}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-NoLnk <info@nolnk.net>}
+      - SMTP_HOURLY_LIMIT=${SMTP_HOURLY_LIMIT:-450}
+    volumes:
+      - mailer-data:/data
+    # Host'a port AÇILMAZ — yalnız iç ağ. (İleride paneli tarayıcıdan açmak istersen Caddy +
+    # Basic Auth ile mailer:5980'e yönlendir; rehber §6.)
+    expose:
+      - "5980"
+    healthcheck:
+      # /api/health auth'tan muaf (server.js). node:20-slim'de curl/wget yok → node fetch.
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5980/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - mailer-net
+
+  # --- WATCHDOG (bu projenin bekçisi; ../ops/watchdog.sh — nolnk/beylink ile aynı script) ---
+  watchdog:
+    image: docker:cli
+    container_name: mailer-watchdog
+    restart: unless-stopped
+    depends_on:
+      mailer:
+        condition: service_healthy
+    environment:
+      - WATCHDOG_SERVICES=nolnk-mailer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../ops/watchdog.sh:/watchdog.sh:ro
+      - mailer-watchdog-state:/state
+    command: ["sh", "/watchdog.sh", "--loop"]
+    networks:
+      - mailer-net
+
+volumes:
+  mailer-data:
+  mailer-watchdog-state:
+
+networks:
+  # İç ağ — mailer host'a ve edge'e kapalı (yalnız kendi ağı). Watchdog docker.sock ile yönetir.
+  mailer-net:
+    driver: bridge

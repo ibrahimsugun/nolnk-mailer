@@ -1,0 +1,13 @@
+# İmaja ASLA girmemesi gerekenler (secret + yerel + gereksiz).
+node_modules
+data
+.env
+*.log
+*.bak.*
+**/.DS_Store
+._*
+.claude
+.git
+# Dokümanlar ve testler üretim imajında gereksiz
+*.md
+test

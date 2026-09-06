@@ -1,0 +1,8 @@
+.env
+data/
+node_modules/
+*.bak.*
+
+# macOS artiklari (AppleDouble)
+._*
+.DS_Store

@@ -1,0 +1,410 @@
+[
+  {
+    "file": "tr/tanitim.html",
+    "name": "Tanıtım / Davet",
+    "subject": "Linklerinizi kısaltın, tıklamaları görün",
+    "lang": "tr"
+  },
+  {
+    "file": "en/tanitim.html",
+    "name": "Intro / Invitation",
+    "subject": "Shorten your links, see who clicks",
+    "lang": "en"
+  },
+  {
+    "file": "tr/kampanya.html",
+    "name": "Kampanya / İlk Ay Hediye",
+    "subject": "İlk ayınız bizden: Standart plan",
+    "lang": "tr"
+  },
+  {
+    "file": "en/kampanya.html",
+    "name": "Campaign / First Month On Us",
+    "subject": "Your first month on us: the Standard plan",
+    "lang": "en"
+  },
+  {
+    "file": "tr/sifre-sifirlama.html",
+    "name": "Şifre Sıfırlama",
+    "subject": "Şifre sıfırlama kodunuz",
+    "lang": "tr"
+  },
+  {
+    "file": "en/sifre-sifirlama.html",
+    "name": "Password Reset",
+    "subject": "Your password reset code",
+    "lang": "en"
+  },
+  {
+    "file": "tr/eposta-dogrulama.html",
+    "name": "E-posta Doğrulama",
+    "subject": "E-posta adresinizi doğrulayın",
+    "lang": "tr"
+  },
+  {
+    "file": "en/eposta-dogrulama.html",
+    "name": "Email Verification",
+    "subject": "Verify your email address",
+    "lang": "en"
+  },
+  {
+    "file": "tr/kayit-kodu.html",
+    "name": "Kayıt Kodu",
+    "subject": "Kayıt kodunuz",
+    "lang": "tr"
+  },
+  {
+    "file": "en/kayit-kodu.html",
+    "name": "Registration Code",
+    "subject": "Your registration code",
+    "lang": "en"
+  },
+  {
+    "file": "tr/hosgeldin.html",
+    "name": "Hoş Geldin",
+    "subject": "NoLnk'e hoş geldiniz",
+    "lang": "tr"
+  },
+  {
+    "file": "en/hosgeldin.html",
+    "name": "Welcome",
+    "subject": "Welcome to NoLnk",
+    "lang": "en"
+  },
+  {
+    "file": "tr/iki-adimli-sifirlama.html",
+    "name": "İki Adımlı Doğrulama Kaldırıldı",
+    "subject": "İki adımlı doğrulama kaldırıldı",
+    "lang": "tr"
+  },
+  {
+    "file": "en/iki-adimli-sifirlama.html",
+    "name": "Two-Factor Authentication Removed",
+    "subject": "Two-factor authentication removed",
+    "lang": "en"
+  },
+  {
+    "file": "tr/satin-alma.html",
+    "name": "Satın Alma Onayı",
+    "subject": "Satın alma onaylandı",
+    "lang": "tr"
+  },
+  {
+    "file": "en/satin-alma.html",
+    "name": "Purchase Confirmation",
+    "subject": "Purchase confirmed",
+    "lang": "en"
+  },
+  {
+    "file": "tr/ozellik-ipucu.html",
+    "name": "Özellik Tanıtımı / Kullanım İpucu",
+    "subject": "Panelde deneyebileceğiniz üç şey",
+    "lang": "tr"
+  },
+  {
+    "file": "en/ozellik-ipucu.html",
+    "name": "Feature Highlights / Tips",
+    "subject": "Three things to try in your dashboard",
+    "lang": "en"
+  },
+  {
+    "file": "tr/geri-kazanim.html",
+    "name": "Geri Kazanım",
+    "subject": "Hesabınız sizi bekliyor",
+    "lang": "tr"
+  },
+  {
+    "file": "en/geri-kazanim.html",
+    "name": "Win-back",
+    "subject": "Your NoLnk account is still here",
+    "lang": "en"
+  },
+  {
+    "file": "tr/bilgilendirme.html",
+    "name": "Bilgilendirme / Duyuru",
+    "subject": "NoLnk'ten bir duyuru",
+    "lang": "tr"
+  },
+  {
+    "file": "en/bilgilendirme.html",
+    "name": "Announcement / Update",
+    "subject": "An update from NoLnk",
+    "lang": "en"
+  },
+  {
+    "file": "tr/bulten.html",
+    "name": "Bülten",
+    "subject": "NoLnk bülteni: bu ayın notları",
+    "lang": "tr"
+  },
+  {
+    "file": "en/bulten.html",
+    "name": "Newsletter",
+    "subject": "The NoLnk newsletter: this month's notes",
+    "lang": "en"
+  },
+  {
+    "file": "tr/yeni-site.html",
+    "name": "Yeni Sitemiz / Davet",
+    "subject": "Yeni adresimizde hizmetinizdeyiz — bir göz atın",
+    "lang": "tr"
+  },
+  {
+    "file": "en/yeni-site.html",
+    "name": "We're New / Take a Look",
+    "subject": "Our new site is live — come take a look",
+    "lang": "en"
+  },
+  {
+    "file": "es/sifre-sifirlama.html",
+    "name": "Restablecimiento de contraseña",
+    "subject": "Tu código para restablecer la contraseña",
+    "lang": "es"
+  },
+  {
+    "file": "de/sifre-sifirlama.html",
+    "name": "Passwort zurücksetzen",
+    "subject": "Ihr Code zum Zurücksetzen des Passworts",
+    "lang": "de"
+  },
+  {
+    "file": "fr/sifre-sifirlama.html",
+    "name": "Réinitialisation du mot de passe",
+    "subject": "Votre code de réinitialisation du mot de passe",
+    "lang": "fr"
+  },
+  {
+    "file": "pt/sifre-sifirlama.html",
+    "name": "Redefinição de palavra-passe",
+    "subject": "O seu código de redefinição de palavra-passe",
+    "lang": "pt"
+  },
+  {
+    "file": "it/sifre-sifirlama.html",
+    "name": "Reimpostazione della password",
+    "subject": "Il tuo codice per reimpostare la password",
+    "lang": "it"
+  },
+  {
+    "file": "ru/sifre-sifirlama.html",
+    "name": "Сброс пароля",
+    "subject": "Ваш код для сброса пароля",
+    "lang": "ru"
+  },
+  {
+    "file": "ja/sifre-sifirlama.html",
+    "name": "パスワードの再設定",
+    "subject": "パスワード再設定コード",
+    "lang": "ja"
+  },
+  {
+    "file": "es/eposta-dogrulama.html",
+    "name": "Verificación de correo electrónico",
+    "subject": "Verifica tu dirección de correo electrónico",
+    "lang": "es"
+  },
+  {
+    "file": "de/eposta-dogrulama.html",
+    "name": "E-Mail-Bestätigung",
+    "subject": "Bestätigen Sie Ihre E-Mail-Adresse",
+    "lang": "de"
+  },
+  {
+    "file": "fr/eposta-dogrulama.html",
+    "name": "Vérification de l’e-mail",
+    "subject": "Vérifiez votre adresse e-mail",
+    "lang": "fr"
+  },
+  {
+    "file": "pt/eposta-dogrulama.html",
+    "name": "Verificação de e-mail",
+    "subject": "Verifique o seu endereço de e-mail",
+    "lang": "pt"
+  },
+  {
+    "file": "it/eposta-dogrulama.html",
+    "name": "Verifica dell’e-mail",
+    "subject": "Verifica il tuo indirizzo e-mail",
+    "lang": "it"
+  },
+  {
+    "file": "ru/eposta-dogrulama.html",
+    "name": "Подтверждение эл. почты",
+    "subject": "Подтвердите ваш адрес эл. почты",
+    "lang": "ru"
+  },
+  {
+    "file": "ja/eposta-dogrulama.html",
+    "name": "メール確認",
+    "subject": "メールアドレスを確認してください",
+    "lang": "ja"
+  },
+  {
+    "file": "es/kayit-kodu.html",
+    "name": "Código de registro",
+    "subject": "Tu código de registro",
+    "lang": "es"
+  },
+  {
+    "file": "de/kayit-kodu.html",
+    "name": "Registrierungscode",
+    "subject": "Ihr Registrierungscode",
+    "lang": "de"
+  },
+  {
+    "file": "fr/kayit-kodu.html",
+    "name": "Code d’inscription",
+    "subject": "Votre code d’inscription",
+    "lang": "fr"
+  },
+  {
+    "file": "pt/kayit-kodu.html",
+    "name": "Código de registo",
+    "subject": "O seu código de registo",
+    "lang": "pt"
+  },
+  {
+    "file": "it/kayit-kodu.html",
+    "name": "Codice di registrazione",
+    "subject": "Il tuo codice di registrazione",
+    "lang": "it"
+  },
+  {
+    "file": "ru/kayit-kodu.html",
+    "name": "Код регистрации",
+    "subject": "Ваш код регистрации",
+    "lang": "ru"
+  },
+  {
+    "file": "ja/kayit-kodu.html",
+    "name": "登録コード",
+    "subject": "登録コード",
+    "lang": "ja"
+  },
+  {
+    "file": "es/hosgeldin.html",
+    "name": "Bienvenida",
+    "subject": "Te damos la bienvenida a NoLnk",
+    "lang": "es"
+  },
+  {
+    "file": "de/hosgeldin.html",
+    "name": "Willkommen",
+    "subject": "Willkommen bei NoLnk",
+    "lang": "de"
+  },
+  {
+    "file": "fr/hosgeldin.html",
+    "name": "Bienvenue",
+    "subject": "Bienvenue chez NoLnk",
+    "lang": "fr"
+  },
+  {
+    "file": "pt/hosgeldin.html",
+    "name": "Boas-vindas",
+    "subject": "Bem-vindo à NoLnk",
+    "lang": "pt"
+  },
+  {
+    "file": "it/hosgeldin.html",
+    "name": "Benvenuto",
+    "subject": "Ti diamo il benvenuto su NoLnk",
+    "lang": "it"
+  },
+  {
+    "file": "ru/hosgeldin.html",
+    "name": "Добро пожаловать",
+    "subject": "Добро пожаловать в NoLnk",
+    "lang": "ru"
+  },
+  {
+    "file": "ja/hosgeldin.html",
+    "name": "ようこそ",
+    "subject": "NoLnkへようこそ",
+    "lang": "ja"
+  },
+  {
+    "file": "es/iki-adimli-sifirlama.html",
+    "name": "Verificación en dos pasos eliminada",
+    "subject": "Se ha eliminado la verificación en dos pasos",
+    "lang": "es"
+  },
+  {
+    "file": "de/iki-adimli-sifirlama.html",
+    "name": "Zwei-Faktor-Authentifizierung entfernt",
+    "subject": "Zwei-Faktor-Authentifizierung wurde entfernt",
+    "lang": "de"
+  },
+  {
+    "file": "fr/iki-adimli-sifirlama.html",
+    "name": "Authentification à deux facteurs désactivée",
+    "subject": "L’authentification à deux facteurs a été désactivée",
+    "lang": "fr"
+  },
+  {
+    "file": "pt/iki-adimli-sifirlama.html",
+    "name": "Verificação em duas etapas removida",
+    "subject": "A verificação em duas etapas foi removida",
+    "lang": "pt"
+  },
+  {
+    "file": "it/iki-adimli-sifirlama.html",
+    "name": "Verifica in due passaggi rimossa",
+    "subject": "La verifica in due passaggi è stata rimossa",
+    "lang": "it"
+  },
+  {
+    "file": "ru/iki-adimli-sifirlama.html",
+    "name": "Двухфакторная аутентификация отключена",
+    "subject": "Двухфакторная аутентификация отключена",
+    "lang": "ru"
+  },
+  {
+    "file": "ja/iki-adimli-sifirlama.html",
+    "name": "二段階認証が解除されました",
+    "subject": "二段階認証が解除されました",
+    "lang": "ja"
+  },
+  {
+    "file": "es/satin-alma.html",
+    "name": "Confirmación de compra",
+    "subject": "Compra confirmada",
+    "lang": "es"
+  },
+  {
+    "file": "de/satin-alma.html",
+    "name": "Kaufbestätigung",
+    "subject": "Kauf bestätigt",
+    "lang": "de"
+  },
+  {
+    "file": "fr/satin-alma.html",
+    "name": "Confirmation d’achat",
+    "subject": "Achat confirmé",
+    "lang": "fr"
+  },
+  {
+    "file": "pt/satin-alma.html",
+    "name": "Confirmação de compra",
+    "subject": "Compra confirmada",
+    "lang": "pt"
+  },
+  {
+    "file": "it/satin-alma.html",
+    "name": "Conferma d’acquisto",
+    "subject": "Acquisto confermato",
+    "lang": "it"
+  },
+  {
+    "file": "ru/satin-alma.html",
+    "name": "Подтверждение покупки",
+    "subject": "Покупка подтверждена",
+    "lang": "ru"
+  },
+  {
+    "file": "ja/satin-alma.html",
+    "name": "購入確認",
+    "subject": "購入が確定しました",
+    "lang": "ja"
+  }
+]
