@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Giriş · NoLnk Mailer</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="login-body">
+  <main class="login-wrap">
+    <div class="login-card">
+      <div class="brand login-brand">
+        <span class="brand-dot"></span>
+        <div>
+          <div class="brand-name">NoLnk Mailer</div>
+          <div class="brand-sub">gönderim paneli</div>
+        </div>
+      </div>
+
+      <form id="stepPass" class="login-form" novalidate>
+        <label class="field">
+          <span class="field-label">Kullanıcı adı</span>
+          <input type="text" id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Şifre</span>
+          <input type="password" id="password" name="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit" id="passBtn" class="login-btn">Giriş yap</button>
+      </form>
+
+      <form id="stepCode" class="login-form" novalidate hidden>
+        <p class="login-note" id="codeNote">Telefonundaki doğrulama uygulamasını aç ve NoLnk Mailer için görünen 6 haneli kodu yaz.</p>
+        <label class="field" id="codeField">
+          <span class="field-label">Doğrulama kodu</span>
+          <input type="text" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="code-input" />
+        </label>
+        <label class="field" id="recoveryField" hidden>
+          <span class="field-label">Kurtarma kodu</span>
+          <input type="text" id="recovery" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" class="code-input" />
+        </label>
+        <button type="submit" id="codeBtn" class="login-btn">Doğrula</button>
+        <div class="login-links">
+          <button type="button" class="link-btn" id="toggleRecovery">Telefonum yanımda değil, kurtarma kodu kullanacağım</button>
+          <button type="button" class="link-btn" id="backBtn">Baştan başla</button>
+        </div>
+      </form>
+
+      <div id="err" class="login-err" role="alert" hidden></div>
+    </div>
+    <p class="login-foot">Bu panel yalnız yetkili kişiler içindir. Giriş denemeleri kayıt altına alınır.</p>
+  </main>
+  <script src="/login.js"></script>
+</body>
+</html>

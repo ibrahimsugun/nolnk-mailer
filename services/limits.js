@@ -6,6 +6,7 @@
 
 const CAPS = {
   smtpHourlyDefault: 450,
+  globalHourlyDefault: 100, // sağlayıcıdan bağımsız toplam saatlik kontrollü gönderim
   resendDaily: 100,
   resendMonthly: 3000,
   resendRatePerSec: 2,
@@ -36,7 +37,25 @@ function providerCaps(getSetting) {
   if (smtpHourly === null) smtpHourly = pozitifSayiYaDaNull(process.env.SMTP_HOURLY_LIMIT);
   if (smtpHourly === null) smtpHourly = CAPS.smtpHourlyDefault;
 
+  // TOPLAM saatlik üst sınır (smtp+resend birlikte): ayar > env > 100. 0 = sınırsız.
+  let globalHourly = null;
+  if (typeof getSetting === 'function') {
+    try {
+      const ham = getSetting('global_hourly_limit');
+      if (ham !== undefined && ham !== null && ham !== '') {
+        const n = Number(ham);
+        if (Number.isFinite(n) && n >= 0) globalHourly = Math.floor(n);
+      }
+    } catch { /* env'e düş */ }
+  }
+  if (globalHourly === null) {
+    const e = process.env.GLOBAL_HOURLY_LIMIT;
+    const n = e === undefined || e === '' ? NaN : Number(e);
+    globalHourly = Number.isFinite(n) && n >= 0 ? Math.floor(n) : CAPS.globalHourlyDefault;
+  }
+
   return {
+    globalHourly,
     smtpHourly,
     resendDaily: CAPS.resendDaily,
     resendMonthly: CAPS.resendMonthly,

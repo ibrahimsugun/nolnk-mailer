@@ -12,6 +12,78 @@
     "lang": "en"
   },
   {
+    "file": "tr/tanitim-kisisel.html",
+    "name": "Tanıtım / Kişisel Not",
+    "subject": "Kısa bir merhaba",
+    "lang": "tr"
+  },
+  {
+    "file": "en/tanitim-kisisel.html",
+    "name": "Intro / Personal Note",
+    "subject": "A quick hello",
+    "lang": "en"
+  },
+  {
+    "file": "tr/tanitim-soru.html",
+    "name": "Tanıtım / Soru Tarzı",
+    "subject": "Linklerinizi nasıl takip ediyorsunuz?",
+    "lang": "tr"
+  },
+  {
+    "file": "en/tanitim-soru.html",
+    "name": "Intro / Question Style",
+    "subject": "How do you keep track of your links?",
+    "lang": "en"
+  },
+  {
+    "file": "tr/tanitim-hikaye.html",
+    "name": "Tanıtım / Kısa Hikaye",
+    "subject": "Küçük bir araç, belki işinize yarar",
+    "lang": "tr"
+  },
+  {
+    "file": "en/tanitim-hikaye.html",
+    "name": "Intro / Short Story",
+    "subject": "A small tool that might come in handy",
+    "lang": "en"
+  },
+  {
+    "file": "tr/tanitim-ornek.html",
+    "name": "Tanıtım / Somut Örnek",
+    "subject": "Baskıdaki QR kod meselesi",
+    "lang": "tr"
+  },
+  {
+    "file": "en/tanitim-ornek.html",
+    "name": "Intro / One Scenario",
+    "subject": "One link per channel",
+    "lang": "en"
+  },
+  {
+    "file": "tr/tanitim-kisa.html",
+    "name": "Tanıtım / Kısa ve Öz",
+    "subject": "Uzatmadan söyleyeyim",
+    "lang": "tr"
+  },
+  {
+    "file": "en/tanitim-kisa.html",
+    "name": "Intro / The Short Version",
+    "subject": "The short version",
+    "lang": "en"
+  },
+  {
+    "file": "tr/tanitim-fikir.html",
+    "name": "Tanıtım / Fikir Ricası",
+    "subject": "Bir konuda fikrinizi sorabilir miyim?",
+    "lang": "tr"
+  },
+  {
+    "file": "en/tanitim-fikir.html",
+    "name": "Intro / Honest Opinion",
+    "subject": "An honest opinion, if you have a minute",
+    "lang": "en"
+  },
+  {
     "file": "tr/kampanya.html",
     "name": "Kampanya / İlk Ay Hediye",
     "subject": "İlk ayınız bizden: Standart plan",
@@ -146,13 +218,13 @@
   {
     "file": "tr/yeni-site.html",
     "name": "Yeni Sitemiz / Davet",
-    "subject": "Yeni adresimizde hizmetinizdeyiz — bir göz atın",
+    "subject": "Yeni adresimizde hizmetinizdeyiz, bir göz atın",
     "lang": "tr"
   },
   {
     "file": "en/yeni-site.html",
     "name": "We're New / Take a Look",
-    "subject": "Our new site is live — come take a look",
+    "subject": "Our new site is live, come take a look",
     "lang": "en"
   },
   {

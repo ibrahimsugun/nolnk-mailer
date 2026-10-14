@@ -2,8 +2,10 @@
 # NoLnk/BeyLink deseniyle aynı: uygulama + kendi bekçisi, kademeli/sağlık-koşullu açılış.
 # Çalıştırma: docker compose up --build -d   (bu klasörün .env'i otomatik okunur)
 #
-# GÜVENLİK: Panel host'a AÇILMAZ (ports YOK). Yalnız iç ağdan + X-Panel-Token ile erişilir.
-# Sırlar ($dir/.env): PANEL_TOKEN, RESEND_API_KEY, SMTP_*  (git'e girmez).
+# GÜVENLİK: Panel host'a AÇILMAZ (ports YOK). Dışarıdan tek yol: Cloudflare, ortak Caddy
+# (gonder.nolnk.net bloğu) ve edge ağı üzerinden bu container. Panel şifre ve oturumla korunur.
+# Sırlar ($dir/.env): PANEL_USER, PANEL_PASSWORD_HASH, SESSION_SECRET, RESEND_*, SMTP_*
+# (git'e girmez). Ayrıntı: README.md, "gonder.nolnk.net üzerinde yayın".
 
 services:
   # --- MAILER (Express + better-sqlite3) ---
@@ -12,19 +14,32 @@ services:
       context: .
       dockerfile: mailer.Dockerfile
     container_name: nolnk-mailer
+    # Bellek tavanı (2026-09-22): taşan container yalnız kendini yeniden başlatır, sunucuyu etkilemez.
+    mem_limit: 512m
+    # init (tini): node PID 1 olunca SIGTERM duymuyordu, 10 sn sonra zorla oldurulurdu. Temiz ve hizli kapanis.
+    init: true
     restart: unless-stopped
     environment:
       - NODE_ENV=production
       - PORT=5980
-      # Docker'da container ağına bağlan (host'a değil). Panel token korur.
+      # Docker'da container ağına bağlan (host'a değil).
       - BIND_HOST=0.0.0.0
-      # Panel API auth — TANIMSIZSA compose başlatmaz (fail-fast; auth'suz ağa açılmayı önler).
-      - PANEL_TOKEN=${PANEL_TOKEN:?PANEL_TOKEN zorunludur - nolnk-mailer/.env icinde tanimla}
+      # Caddy arkasında: gerçek ziyaretçi IP'si (kilitler için) ve Secure cookie
+      - TRUST_PROXY=1
+      # Panel girişi. Tanımsızsa compose hiç başlamaz; uygulama da ayrıca kontrol eder.
+      - PANEL_USER=${PANEL_USER:?PANEL_USER zorunlu, nolnk-mailer/.env icinde tanimla}
+      - PANEL_PASSWORD_HASH=${PANEL_PASSWORD_HASH:?PANEL_PASSWORD_HASH zorunlu, node scripts/hash-password.js ile uret}
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET zorunlu, node scripts/hash-password.js --secret ile uret}
+      - SESSION_IDLE_HOURS=${SESSION_IDLE_HOURS:-12}
+      - SESSION_MAX_DAYS=${SESSION_MAX_DAYS:-7}
+      # İsteğe bağlı script erişimi (X-Panel-Token). Boşsa kapalı.
+      - PANEL_TOKEN=${PANEL_TOKEN:-}
       # SQLite kalıcılığı (volume)
       - MAILER_DB_PATH=/data/mailer.sqlite
       # E-posta sağlayıcıları (.env'den; NoLnk backend'iyle aynı değerler)
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM=${RESEND_FROM:-NoLnk <info@nolnk.net>}
+      - RESEND_WEBHOOK_SECRET=${RESEND_WEBHOOK_SECRET:-}
       - SMTP_HOST=${SMTP_HOST:-mail.privateemail.com}
       - SMTP_PORT=${SMTP_PORT:-465}
       - SMTP_SECURE=${SMTP_SECURE:-true}
@@ -32,10 +47,14 @@ services:
       - SMTP_PASS=${SMTP_PASS:-}
       - SMTP_FROM=${SMTP_FROM:-NoLnk <info@nolnk.net>}
       - SMTP_HOURLY_LIMIT=${SMTP_HOURLY_LIMIT:-450}
+      - GLOBAL_HOURLY_LIMIT=${GLOBAL_HOURLY_LIMIT:-100}
+      # Allegrow e-posta doğrulama (scripts/allegrow-verify.js; container'da .env dosyası yok)
+      - ALLEGROW_KEY_ID=${ALLEGROW_KEY_ID:-}
+      - ALLEGROW_API_KEY=${ALLEGROW_API_KEY:-}
     volumes:
       - mailer-data:/data
-    # Host'a port AÇILMAZ — yalnız iç ağ. (İleride paneli tarayıcıdan açmak istersen Caddy +
-    # Basic Auth ile mailer:5980'e yönlendir; rehber §6.)
+    # Host'a port AÇILMAZ. Ortak Caddy aynı edge ağında olduğu için nolnk-mailer:5980 adresine
+    # doğrudan ulaşır (/root/Startings/caddy/Caddyfile içindeki gonder.nolnk.net bloğu).
     expose:
       - "5980"
     healthcheck:
@@ -47,11 +66,16 @@ services:
       start_period: 20s
     networks:
       - mailer-net
+      # Ortak Caddy'nin bulunduğu dış ağ. nolnk ve beylink compose'ları da buna üye.
+      - edge
 
   # --- WATCHDOG (bu projenin bekçisi; ../ops/watchdog.sh — nolnk/beylink ile aynı script) ---
   watchdog:
     image: docker:cli
     container_name: mailer-watchdog
+    # Bellek tavanı (2026-09-22): taşan container yalnız kendini yeniden başlatır, sunucuyu etkilemez.
+    mem_limit: 64m
+    init: true   # sh PID 1 olunca SIGTERM duymuyordu
     restart: unless-stopped
     depends_on:
       mailer:
@@ -71,6 +95,9 @@ volumes:
   mailer-watchdog-state:
 
 networks:
-  # İç ağ — mailer host'a ve edge'e kapalı (yalnız kendi ağı). Watchdog docker.sock ile yönetir.
+  # İç ağ: mailer ve watchdog. Watchdog docker.sock ile yönetir, edge'e girmez.
   mailer-net:
     driver: bridge
+  # Sunucuda önceden var: docker network create edge (bir kez)
+  edge:
+    external: true

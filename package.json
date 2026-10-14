@@ -7,12 +7,14 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node test/csv.test.js && node test/generate.test.js && node test/render.test.js && node test/throttle.test.js && node test/limits.test.js && node test/balancer-engine.test.js",
+    "test": "node --test test/*.test.js",
+    "hash-password": "node scripts/hash-password.js",
     "backup": "bash scripts/backup.sh"
   },
   "dependencies": {
     "better-sqlite3": "^11.3.0",
     "express": "^4.19.2",
+    "imapflow": "^2.0.2",
     "nodemailer": "^6.9.14"
   }
 }

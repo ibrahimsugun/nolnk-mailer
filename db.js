@@ -178,6 +178,39 @@ CREATE INDEX IF NOT EXISTS idx_balancer_log_ts      ON balancer_log(ts);
 CREATE INDEX IF NOT EXISTS idx_send_items_prov_sent ON send_items(provider, status, sent_at);
 `);
 
+// --- Panel girişi (services/auth.js) ---
+// sessions: tarayıcı oturumları. Ham token asla saklanmaz, yalnız sha256 özeti durur; DB dosyası
+// ele geçse bile oturum çalınamaz. Zamanlar epoch milisaniye (INTEGER), karşılaştırması kolay.
+// stage: 'full' tam oturum, 'pending2fa' şifre doğru ama doğrulama kodu bekleniyor (5 dk).
+// auth_log: giriş denemeleri ve güvenlik olayları. Kademeli kilit bu tablodan hesaplanır,
+// böylece restart sonrası da geçerli kalır.
+db.exec(`
+CREATE TABLE IF NOT EXISTS sessions (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  token_hash   TEXT    NOT NULL UNIQUE,
+  stage        TEXT    NOT NULL DEFAULT 'full',
+  username     TEXT    NOT NULL DEFAULT '',
+  created_at   INTEGER NOT NULL,
+  last_seen_at INTEGER NOT NULL,
+  expires_at   INTEGER NOT NULL,
+  ip           TEXT    NOT NULL DEFAULT '',
+  ua           TEXT    NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+
+CREATE TABLE IF NOT EXISTS auth_log (
+  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts       INTEGER NOT NULL,
+  ip       TEXT    NOT NULL DEFAULT '',
+  ua       TEXT    NOT NULL DEFAULT '',
+  username TEXT    NOT NULL DEFAULT '',
+  event    TEXT    NOT NULL,
+  ok       INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_auth_log_ip_ts   ON auth_log(ip, ts);
+CREATE INDEX IF NOT EXISTS idx_auth_log_user_ts ON auth_log(username, ts);
+`);
+
 /**
  * slug backfill (idempotent): seeds/templates.json zaten (lang, name) → dosya bağını taşıyor
  * ('tr/hosgeldin.html'). YALNIZ slug'ı boş olan kayda yazar → elle değiştirilen slug korunur,

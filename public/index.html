@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>NoLnk Mailer</title>
+  <link rel="icon" href="data:," />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -32,7 +34,11 @@
       <div class="sidebar-foot">
         <div class="prov-line"><span class="dot dot-muted" id="provDotResend"></span> Resend: <span id="provResend" class="muted">—</span></div>
         <div class="prov-line"><span class="dot dot-muted" id="provDotSmtp"></span> SMTP: <span id="provSmtp" class="muted">—</span></div>
-        <div style="opacity:.6">yalnız localhost · :5980</div>
+        <div class="user-line">
+          <span class="dot dot-green"></span>
+          <span id="userName" class="user-name">…</span>
+          <button type="button" id="logoutBtn" class="btn-ghost btn-sm">Çıkış</button>
+        </div>
       </div>
     </aside>
 
@@ -44,6 +50,7 @@
   <div class="toast" id="toast"></div>
   <div class="modal-backdrop" id="modalBackdrop" hidden></div>
 
+  <script src="/vendor/qrcode.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

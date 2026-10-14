@@ -47,8 +47,16 @@
   }
 
   // ---------------- API (fetch sarmalayıcı) ----------------
+  // X-Requested-With: sunucudaki CSRF korumasının beklediği başlık (başka site bunu ekleyemez).
+  // 401: oturum düşmüş ya da süresi dolmuş → giriş sayfasına, dönünce aynı ekrana gelinsin.
+  let goingToLogin = false;
+  function goLogin() {
+    if (goingToLogin) return;
+    goingToLogin = true;
+    location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search + location.hash);
+  }
   async function req(method, url, body) {
-    const opt = { method, headers: {} };
+    const opt = { method, headers: { 'X-Requested-With': 'fetch' }, credentials: 'same-origin' };
     if (body !== undefined) {
       opt.headers['Content-Type'] = 'application/json';
       opt.body = JSON.stringify(body);
@@ -58,6 +66,10 @@
       res = await fetch(url, opt);
     } catch {
       throw new Error('Sunucuya ulaşılamadı');
+    }
+    if (res.status === 401) {
+      goLogin();
+      throw new Error('Oturumun kapanmış, giriş sayfasına yönlendiriliyorsun');
     }
     const ct = res.headers.get('content-type') || '';
     const data = ct.includes('application/json')
@@ -78,6 +90,7 @@
     const b = $('#modalBackdrop');
     b.hidden = true;
     b.innerHTML = '';
+    delete b.dataset.sticky; // bir sonraki modal yine dışarı tıklayınca kapanabilsin
   }
   function showModal({ title, body, actions, wide } = {}) {
     const back = $('#modalBackdrop');
@@ -232,7 +245,7 @@
   function showHoverPreview(rowEl, t, gosterilen) {
     hideHoverPreview();
     const { tpl, kendisi } = gosterilen;
-    const frame = h('iframe', { sandbox: '', class: 'hover-frame' });
+    const frame = h('iframe', { sandbox: '', referrerpolicy: 'no-referrer', class: 'hover-frame' });
     hoverEl = h('div', { class: 'hover-preview' },
       h('div', { class: 'hover-head' },
         h('b', {}, tpl.name),
@@ -255,7 +268,7 @@
    */
   function showQueuePreview(rowEl, r) {
     hideHoverPreview();
-    const frame = h('iframe', { sandbox: '', class: 'hover-frame' });
+    const frame = h('iframe', { sandbox: '', referrerpolicy: 'no-referrer', class: 'hover-frame' });
     const subEl = h('span', { class: 'hover-sub' }, 'Yükleniyor…');
     hoverEl = h('div', { class: 'hover-preview' },
       h('div', { class: 'hover-head' }, h('b', {}, r.campaign || '(konu yok)'), subEl),
@@ -315,7 +328,7 @@
     balancer:    { title: 'Balancer',    sub: 'Sağlayıcı durumu ve loglar',  render: placeholder('T5') },
     gonderilmis: { title: 'Gönderilmiş', sub: 'Giden mail arşivi',          render: placeholder('T8') },
     gecmis:    { title: 'Geçmiş',    sub: 'Gönderim kayıtları',         render: placeholder('T3.7') },
-    ayarlar:   { title: 'Ayarlar',   sub: 'Sağlayıcı ayarları',         render: placeholder('T5.4') },
+    ayarlar:   { title: 'Ayarlar',   sub: 'Güvenlik ve sağlayıcı ayarları', render: placeholder('T5.4') },
   };
 
   // ---------------- Router ----------------
@@ -1014,7 +1027,7 @@
       const htmlI = h('textarea', { class: 'mono preview-tall', style: { resize: 'vertical' } }, isNew ? '' : t.html);
       const langSel = h('select', {}, ...langOptions());
       langSel.value = isNew ? 'tr' : (t.lang || 'tr');
-      const frame = h('iframe', { sandbox: '', class: 'preview-frame preview-tall' });
+      const frame = h('iframe', { sandbox: '', referrerpolicy: 'no-referrer', class: 'preview-frame preview-tall' });
       const txNote = h('div', { class: 'card-hint', style: { marginTop: '6px' } });
       // Son render edilen hal — "Büyüt" modalı bunu yeniden hesaplamadan kullanır.
       let lastHtml = '';
@@ -1039,7 +1052,7 @@
 
       // Tam genişlikte büyük önizleme (dar ekranda yan yana yerleşim sıkışıyorsa)
       function zoomPreview() {
-        const big = h('iframe', { sandbox: '', class: 'preview-frame preview-modal' });
+        const big = h('iframe', { sandbox: '', referrerpolicy: 'no-referrer', class: 'preview-frame preview-modal' });
         showModal({
           title: 'Önizleme — ' + (subjI.value.trim() || '(konu yok)'),
           wide: true,
@@ -1114,7 +1127,7 @@
       const htmlI = h('textarea', { class: 'mono', style: { minHeight: '150px' } }, s ? s.html : '');
       const defI = h('input', { type: 'checkbox' });
       if (s && s.is_default) defI.checked = true;
-      const frame = h('iframe', { sandbox: '', style: { width: '100%', minHeight: '100px', border: '1px solid var(--border)', borderRadius: '9px', background: '#fff' } });
+      const frame = h('iframe', { sandbox: '', referrerpolicy: 'no-referrer', style: { width: '100%', minHeight: '100px', border: '1px solid var(--border)', borderRadius: '9px', background: '#fff' } });
       const upd = () => { frame.srcdoc = htmlI.value; };
       htmlI.addEventListener('input', upd);
       showModal({
@@ -1321,7 +1334,7 @@
       // Sunucudan render edilir → gerçek gönderimle AYNI boru hattı (imza + merge-tag + ilk alıcı).
       // İstemci-tarafı taklit yapmıyoruz ki "önizlemede başka, mailde başka" durumu oluşmasın.
       const previewHead = h('div', { class: 'preview-head' });
-      const previewFrame = h('iframe', { sandbox: '', class: 'preview-frame preview-tall' });
+      const previewFrame = h('iframe', { sandbox: '', referrerpolicy: 'no-referrer', class: 'preview-frame preview-tall' });
       const previewNote = h('div', { class: 'card-hint', style: { marginTop: '6px' } });
       let lastPreview = null;
       let previewT = null;
@@ -1436,7 +1449,7 @@
       async function doPreview() {
         try {
           const r = lastPreview || (await api.post('/api/send/preview', payload()));
-          const frame = h('iframe', { sandbox: '', class: 'preview-frame preview-modal' });
+          const frame = h('iframe', { sandbox: '', referrerpolicy: 'no-referrer', class: 'preview-frame preview-modal' });
           showModal({
             title: 'Önizleme — ' + (r.contact_email || 'örnek'),
             wide: true,
@@ -1620,6 +1633,16 @@
   // info eksik/bozuk gelirse (beklenmez ama savunmacı) çökmek yerine "bilinmiyor" göster — bu satır
   // Kuyruk'un canlı poll döngüsü İÇİNDE render edilir, burada atılacak bir hata TÜM listeyi
   // "Yüklenemedi" durumuna düşürür (bkz. load()/silentReload() try/catch'i).
+  // Kontrollü gönderim satırı (toplam saatlik sınır). Sınır kapalıysa (cap=0) hiç görünmez.
+  function balancerGlobalLine(g) {
+    if (!g || !g.cap) return null;
+    return h('div', { class: 'balancer-line' },
+      h('b', {}, 'Kontrollü gönderim: '),
+      h('span', {}, g.used + '/' + g.cap + ' son 60 dk'),
+      h('span', { class: 'muted' }, '· ~' + g.interval_sec + ' sn arayla'),
+      g.next_slot_sec ? h('span', { class: 'badge badge-warn' }, 'sıradaki gönderim ' + g.next_slot_human + ' sonra') : h('span', { class: 'badge badge-green' }, 'akıyor')
+    );
+  }
   function balancerProviderLine(info, label, showMonthly) {
     if (!info) return h('div', { class: 'balancer-line' }, h('b', {}, label + ': '), h('span', { class: 'muted' }, 'bilinmiyor'));
     const hb = providerHealthBadge(info);
@@ -1669,7 +1692,8 @@
       stripHost.append(
         h('div', { class: 'card' },
           balancerProviderLine(balStatus.smtp, 'PrivateEmail', false),
-          balancerProviderLine(balStatus.resend, 'Resend', true)
+          balancerProviderLine(balStatus.resend, 'Resend', true),
+          balancerGlobalLine(balStatus.global)
         )
       );
     }
@@ -1699,6 +1723,9 @@
       } catch { /* geçici hata → sonraki tik dener */ }
     }
 
+    // "N tane gönder" butonunun parti boyu. Tek yerden değiştirilir (buton etiketi, ipucu ve
+    // seçim mantığı hep bunu okur).
+    const BATCH_SIZE = 50;
     const readyCount = () => rows.filter((r) => r.status === 'ready').length;
     // Toggle butonun hangi modda olacağını TÜM (filtresiz) veriden hesapla — filtre yalnız
     // görüneni daraltır, "Tümünü Durdur"un neyi etkileyeceğini değiştirmez.
@@ -1762,6 +1789,9 @@
         statusSel,
         h('button', { class: 'btn-ghost btn-sm', onClick: load }, '↻ Yenile'),
         h('span', { class: 'spacer' }),
+        // "50 tane gönder": sırada bekleyen ilk BATCH_SIZE maili seq sırasına göre seçip gönderir.
+        // Toplu gönderimi elle parçalamak zorunda kalmadan kontrollü ilerlemek için.
+        h('button', { class: 'btn-sm', disabled: ready ? null : '', title: 'Kuyrukta Hazır bekleyen ilk ' + BATCH_SIZE + ' maili sırasıyla seçip gönderir (Hata almışlar dahil edilmez).', onClick: startNextBatch }, BATCH_SIZE + ' tane gönder (' + Math.min(BATCH_SIZE, ready) + ')'),
         h('button', { class: 'btn-sm', disabled: sel ? null : '', onClick: startSelected }, 'Seçilenleri gönder' + (sel ? ' (' + sel + ')' : '')),
         h('button', { class: 'btn-sm', disabled: ready ? null : '', onClick: () => start({ all: true }) }, 'Tümünü gönder (' + ready + ')'),
         // Toplu sağlayıcı değiştir: yalnız seçim varken görünür (mevcut toplu seçim — ready/failed checkbox'ları).
@@ -1826,7 +1856,6 @@
           h('td', {}, providerCell(r)),
           h('td', {}, action || '')
         );
-        bindQueueHoverPreview(tr, r);
         return tr;
       });
       const durumHeader = h('span', {
@@ -1856,6 +1885,23 @@
         if (!ok) return;
       }
       start({ item_ids: [...selected] });
+    }
+    // "50 tane gönder": kuyruğu elle parçalamadan sıradaki partiyi göndermek için. Yalnız Hazır
+    // (ready) satırları alır — Hata almışlar çift-gönderim riski taşıdığı için buraya GİRMEZ,
+    // onlar ancak "Seçilenleri gönder"deki bilinçli onaydan geçebilir. Sıra r.seq'e göre, yani
+    // ekrandaki arama/filtre/sıralama bu seçimi etkilemez (tıpkı "Tümünü gönder" gibi).
+    function startNextBatch() {
+      const ids = rows
+        .filter((r) => r.status === 'ready')
+        .sort((a, b) => Number(a.seq) - Number(b.seq))
+        .slice(0, BATCH_SIZE)
+        .map((r) => r.item_id);
+      if (!ids.length) return;
+      // Önce seçimi göster: istek hata verirse parti seçili kalır, kullanıcı ne gideceğini görür.
+      selected.clear();
+      ids.forEach((id) => selected.add(id));
+      render();
+      start({ item_ids: ids });
     }
     // Tek Hata maili "Dene" (satır butonu)
     async function retryOne(r) {
@@ -1915,7 +1961,8 @@
           h('div', { class: 'card-title' }, 'Sağlayıcı durumu'),
           h('div', { class: 'card-hint' }, 'SMTP: kayan 60 dakika · Resend: bugünkü (+aylık) kullanım.'),
           balancerProviderLine(bal.smtp, 'PrivateEmail (SMTP)', false),
-          balancerProviderLine(bal.resend, 'Resend', true)
+          balancerProviderLine(bal.resend, 'Resend', true),
+          balancerGlobalLine(bal.global)
         )
       );
     }
@@ -1982,6 +2029,225 @@
     return load();
   };
 
+  // ----- Güvenlik: iki adımlı doğrulama ve oturumlar (Ayarlar ekranının en üstü) -----
+  // Tarayıcı bilgisini kısaltır: "Chrome · Windows" gibi
+  function uaShort(ua) {
+    const s = String(ua || '');
+    if (!s) return 'bilinmiyor';
+    const browser = /Edg\//.test(s) ? 'Edge' : /OPR\//.test(s) ? 'Opera' : /Firefox\//.test(s) ? 'Firefox'
+      : /Chrome\//.test(s) ? 'Chrome' : /Safari\//.test(s) ? 'Safari' : /curl\//.test(s) ? 'curl' : 'Tarayıcı';
+    const os = /iPhone|iPad/.test(s) ? 'iOS' : /Android/.test(s) ? 'Android' : /Windows/.test(s) ? 'Windows'
+      : /Mac OS X/.test(s) ? 'macOS' : /Linux/.test(s) ? 'Linux' : '';
+    return os ? browser + ' · ' + os : browser;
+  }
+
+  // Modal içinde hata satırı + Enter ile gönderme; tek adımlı küçük formlar için
+  function modalForm({ title, intro, inputs, okLabel, danger, onSubmit }) {
+    const err = h('div', { class: 'sec-err', role: 'alert' });
+    err.hidden = true;
+    let busy = false;
+    async function submit() {
+      if (busy) return;
+      busy = true;
+      err.hidden = true;
+      okBtn.disabled = true;
+      try {
+        await onSubmit(err);
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+      } finally {
+        busy = false;
+        okBtn.disabled = false;
+      }
+    }
+    const body = h('div', {}, intro ? h('p', { class: 'sec-intro' }, intro) : null, ...inputs.map((i) => i.el), err);
+    const { modal } = showModal({
+      title,
+      body,
+      actions: [
+        { label: 'Vazgeç', class: 'btn-ghost', onClick: closeModal },
+        { label: okLabel, class: danger ? 'btn-danger' : 'btn', onClick: submit },
+      ],
+    });
+    const okBtn = modal.querySelector('.modal-foot button:last-child');
+    for (const i of inputs) {
+      const input = i.el.querySelector('input');
+      if (input) input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+    }
+    const first = inputs[0] && inputs[0].el.querySelector('input');
+    if (first) setTimeout(() => first.focus(), 30);
+  }
+
+  function enable2faFlow(onDone) {
+    const pwI = h('input', { type: 'password', autocomplete: 'current-password' });
+    modalForm({
+      title: 'İki adımlı doğrulamayı aç',
+      intro: 'Önce panel şifreni bir kez daha yaz. Sonra telefonundaki doğrulama uygulamasıyla (Google Authenticator, Authy, Microsoft Authenticator) bir QR kod okutacaksın.',
+      inputs: [{ el: field('Panel şifresi', pwI) }],
+      okLabel: 'Devam',
+      onSubmit: async () => {
+        const s = await api.post('/auth/2fa/setup', { password: pwI.value });
+        showQrStep(s, onDone);
+      },
+    });
+  }
+
+  function showQrStep(setup, onDone) {
+    const codeI = h('input', { type: 'text', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: '6', class: 'code-input' });
+    let qrEl;
+    try {
+      const qr = qrcode(0, 'M'); // eslint-disable-line no-undef
+      qr.addData(setup.otpauth);
+      qr.make();
+      // Kütüphanenin kendi ürettiği SVG; içinde kullanıcı girdisi yok
+      qrEl = h('div', { class: 'qr-box', html: qr.createSvgTag({ cellSize: 5, margin: 3, scalable: true }) });
+    } catch {
+      qrEl = h('div', { class: 'card-hint' }, 'QR kod çizilemedi, aşağıdaki anahtarı uygulamaya elle girebilirsin.');
+    }
+    const grouped = setup.secret.replace(/(.{4})/g, '$1 ').trim();
+    const intro = h('div', {},
+      h('p', { class: 'sec-intro' }, '1. Uygulamada yeni hesap ekle ve bu QR kodu okut.'),
+      qrEl,
+      h('p', { class: 'sec-intro' }, 'QR okutamıyorsan anahtarı elle gir:'),
+      h('div', { class: 'secret-box mono' }, grouped),
+      h('p', { class: 'sec-intro' }, '2. Uygulamada beliren 6 haneli kodu aşağıya yaz.')
+    );
+    modalForm({
+      title: 'QR kodu okut',
+      inputs: [{ el: intro }, { el: field('Doğrulama kodu', codeI) }],
+      okLabel: 'Etkinleştir',
+      onSubmit: async () => {
+        const r = await api.post('/auth/2fa/enable', { code: codeI.value.replace(/\D/g, '') });
+        showRecoveryCodes(r, onDone);
+      },
+    });
+  }
+
+  function showRecoveryCodes(r, onDone) {
+    const text = r.recovery_codes.join('\n');
+    const copyBtn = h('button', { class: 'btn-ghost btn-sm', onClick: async () => {
+      try { await navigator.clipboard.writeText(text); toast('Kodlar kopyalandı'); }
+      catch { toast('Kopyalanamadı, elle seç ve kopyala', 'warn'); }
+    } }, 'Kopyala');
+    const body = h('div', {},
+      h('p', { class: 'sec-intro' }, 'İki adımlı doğrulama açıldı. Telefonuna erişemezsen bu kodlarla girebilirsin. Her kod yalnız bir kez çalışır.'),
+      h('p', { class: 'sec-warn' }, 'Bu kodlar bir daha gösterilmeyecek. Şimdi güvenli bir yere kaydet (şifre yöneticisi ideal).'),
+      h('pre', { class: 'recovery-list mono' }, text),
+      h('div', { class: 'btn-row' }, copyBtn),
+      r.sessions_closed ? h('p', { class: 'card-hint mt-1' }, r.sessions_closed + ' başka oturum kapatıldı; oralarda kodla yeniden giriş gerekecek.') : null
+    );
+    showModal({
+      title: 'Kurtarma kodların',
+      body,
+      actions: [{ label: 'Kaydettim, kapat', class: 'btn', onClick: closeModal }],
+    });
+    $('#modalBackdrop').dataset.sticky = '1';
+    onDone(); // arkadaki Güvenlik kartı hemen "açık" görünsün
+  }
+
+  function disable2faFlow(onDone) {
+    const pwI = h('input', { type: 'password', autocomplete: 'current-password' });
+    const codeI = h('input', { type: 'text', autocomplete: 'one-time-code', maxlength: '16', class: 'code-input' });
+    modalForm({
+      title: 'İki adımlı doğrulamayı kapat',
+      intro: 'Kapatınca giriş için yalnız şifre yeterli olur. Onaylamak için şifreni ve uygulamadaki kodu (ya da bir kurtarma kodunu) yaz.',
+      inputs: [{ el: field('Panel şifresi', pwI) }, { el: field('Doğrulama kodu ya da kurtarma kodu', codeI) }],
+      okLabel: 'Kapat',
+      danger: true,
+      onSubmit: async () => {
+        await api.post('/auth/2fa/disable', { password: pwI.value, code: codeI.value.trim() });
+        closeModal();
+        toast('İki adımlı doğrulama kapatıldı', 'warn');
+        onDone();
+      },
+    });
+  }
+
+  function securityCard() {
+    const card = h('div', { class: 'card mb-2' });
+
+    async function reload() {
+      let me;
+      let sessions = [];
+      try {
+        me = await api.get('/auth/me');
+        if (!me.local) sessions = await api.get('/auth/sessions');
+      } catch (e) {
+        card.innerHTML = '';
+        card.append(h('div', { class: 'card-title' }, 'Güvenlik'), h('div', { class: 'card-hint' }, 'Yüklenemedi: ' + e.message));
+        return;
+      }
+      card.innerHTML = '';
+      card.append(h('div', { class: 'card-title' }, 'Güvenlik'));
+
+      if (me.local) {
+        card.append(h('div', { class: 'card-hint' },
+          'Yerel mod açık (LOCAL_ONLY=1). Giriş ekranı ve iki adımlı doğrulama bu modda devre dışı. Sunucuda bu mod çalışmaz; orada panel şifreyle açılır.'));
+        return;
+      }
+
+      // Dar ekranda sidebar altı gizlendiği için çıkış burada da var
+      card.append(h('div', { class: 'head-row' },
+        h('div', { class: 'card-hint mt-0' }, 'Giriş yapan: ', h('b', {}, me.user)),
+        h('button', { class: 'btn-ghost btn-sm', onClick: async () => {
+          try { await api.post('/auth/logout'); } catch { /* yine de girişe dön */ }
+          location.href = '/login';
+        } }, 'Çıkış yap')
+      ));
+
+      const on = me.totp_enabled;
+      card.append(
+        h('div', { class: 'sec-row' },
+          h('div', { class: 'sec-row-text' },
+            h('div', {}, 'İki adımlı doğrulama ',
+              h('span', { class: 'badge ' + (on ? 'badge-green' : 'badge-muted') }, on ? 'açık' : 'kapalı')),
+            h('div', { class: 'card-hint mt-0' }, on
+              ? 'Girişte şifreden sonra telefonundaki kod da soruluyor. Kalan kurtarma kodu: ' + me.recovery_left
+              : 'Açarsan şifren bir yerde ele geçse bile telefonun olmadan kimse giremez.'),
+            on && me.recovery_left <= 3
+              ? h('div', { class: 'sec-warn' }, 'Kurtarma kodun azaldı. Kapatıp yeniden açarsan 10 yeni kod alırsın.')
+              : null
+          ),
+          on
+            ? h('button', { class: 'btn-danger btn-sm', onClick: () => disable2faFlow(reload) }, 'Kapat')
+            : h('button', { class: 'btn-sm', onClick: () => enable2faFlow(reload) }, 'Aç')
+        ),
+        h('hr', { class: 'sep' })
+      );
+
+      const rows = sessions.map((s) => h('tr', {},
+        h('td', { class: 'muted' }, fmtDate(s.created_at)),
+        h('td', { class: 'muted' }, fmtDate(s.last_seen_at)),
+        h('td', { class: 'mono' }, s.ip || 'bilinmiyor'),
+        h('td', { title: s.ua || '' }, uaShort(s.ua)),
+        h('td', {}, s.current ? h('span', { class: 'badge badge-brand' }, 'bu cihaz') : '')
+      ));
+      const revokeBtn = sessions.length > 1
+        ? h('button', { class: 'btn-ghost btn-sm', onClick: async () => {
+          const ok = await confirmModal('Bu cihaz dışındaki bütün oturumlar kapatılsın mı? O cihazlarda yeniden giriş gerekecek.', { title: 'Oturumları kapat', okLabel: 'Kapat', danger: true });
+          if (!ok) return;
+          try {
+            const r = await api.post('/auth/sessions/revoke-others');
+            toast(r.removed + ' oturum kapatıldı');
+            reload();
+          } catch (e) { toast(e.message, 'err'); }
+        } }, 'Diğer oturumları kapat')
+        : null;
+      card.append(
+        h('div', { class: 'head-row', style: { marginBottom: '10px' } },
+          h('div', {}, h('div', { class: 'card-title' }, 'Açık oturumlar'),
+            h('div', { class: 'card-hint mt-0' }, 'Tanımadığın bir cihaz görürsen hepsini kapat ve şifreni değiştir.')),
+          revokeBtn),
+        table(['Açılış', 'Son görülme', 'IP', 'Tarayıcı', ''], rows)
+      );
+    }
+
+    card.append(h('div', { class: 'card-title' }, 'Güvenlik'), h('div', { class: 'card-hint' }, 'Yükleniyor…'));
+    reload();
+    return card;
+  }
+
   // ----- Ayarlar [T5.4] -----
   SCREENS.ayarlar.render = function (view) {
     (async function build() {
@@ -1994,6 +2260,7 @@
       const smtpPortI = h('input', { type: 'number', value: String(s.smtp_port) });
       const smtpUserI = h('input', { type: 'text', value: s.smtp_user });
       const smtpLimitI = h('input', { type: 'number', value: String(s.smtp_hourly_limit) });
+      const globalLimitI = h('input', { type: 'number', min: '0', value: String(s.global_hourly_limit) });
       const smtpResult = h('div', { class: 'card-hint', style: { marginTop: '10px' } });
 
       function suppressionCard() {
@@ -2013,6 +2280,7 @@
             } }, 'Çıkar'))
           ))));
         }
+        const scanResult = h('div', { class: 'card-hint' });
         card.append(
           h('div', { class: 'card-title' }, 'Bastırılmış adresler (kara liste)'),
           h('div', { class: 'card-hint' }, 'Bu listedeki adreslere HİÇBİR gönderim çıkmaz (test dahil).'),
@@ -2021,6 +2289,17 @@
             try { await api.post('/api/suppression', { email: emailI.value.trim(), reason: reasonI.value.trim() }); emailI.value = ''; reasonI.value = ''; toast('Eklendi'); reload(); }
             catch (e) { toast(e.message, 'err'); }
           } }, 'Ekle')),
+          h('div', { class: 'btn-row', style: { marginBottom: '12px' } }, h('button', { class: 'btn-ghost btn-sm', onClick: async (ev) => {
+            ev.target.disabled = true;
+            scanResult.textContent = 'PrivateEmail bounce klasörü taranıyor (birkaç dakika sürebilir)…';
+            try {
+              const r = await api.post('/api/bounce/scan');
+              scanResult.textContent = `✓ ${r.checked} bildirim kontrol edildi, ${r.suppressed} adres kara listeye eklendi.`;
+              reload();
+            } catch (e) { scanResult.textContent = '✗ ' + e.message; }
+            finally { ev.target.disabled = false; }
+          } }, 'Bounce\'ları tara (elle)')),
+          scanResult,
           listHost
         );
         reload();
@@ -2028,6 +2307,7 @@
       }
 
       view.append(
+        securityCard(),
         h('div', { class: 'card mb-2' },
           h('div', { class: 'card-title' }, 'Resend'),
           h('div', { style: { margin: '8px 0' } }, 'API anahtarı: ', badge(s.resend_configured), s.resend_configured ? null : h('span', { class: 'muted', style: { marginLeft: '8px' } }, '→ .env → RESEND_API_KEY')),
@@ -2051,12 +2331,17 @@
           } }, 'Bağlantıyı test et')),
           smtpResult
         ),
+        h('div', { class: 'card mb-2' },
+          h('div', { class: 'card-title' }, 'Kontrollü gönderim'),
+          h('div', { class: 'card-hint' }, 'Kuyrukta "Tümünü gönder" denince mailler tek seferde gitmez; PrivateEmail ve Resend toplamı bu sınırı aşmaz, mailler eşit aralıkla (100/saat → ~36 sn) kendiliğinden sürer. Başında olmasan da devam eder. 0 = sınırsız.'),
+          h('div', { class: 'grid grid-2' }, field('Toplam saatlik limit (mail/saat)', globalLimitI))
+        ),
         suppressionCard(),
         h('div', { class: 'card' },
           h('div', { class: 'card-hint' }, 'Sırlar (Resend key, SMTP şifresi) yalnız .env dosyasından ayarlanır ve UI\'da asla geri gösterilmez ("tanımlı ✓"). Aşağıdaki sır-olmayan ayarlar kaydedilir; .env değerleri gönderimde önceliklidir.'),
           h('div', { class: 'btn-row mt-2' }, h('button', { onClick: async () => {
             try {
-              await api.put('/api/settings', { resend_from: resendFromI.value.trim(), smtp_host: smtpHostI.value.trim(), smtp_port: smtpPortI.value.trim(), smtp_user: smtpUserI.value.trim(), smtp_hourly_limit: smtpLimitI.value.trim() });
+              await api.put('/api/settings', { resend_from: resendFromI.value.trim(), smtp_host: smtpHostI.value.trim(), smtp_port: smtpPortI.value.trim(), smtp_user: smtpUserI.value.trim(), smtp_hourly_limit: smtpLimitI.value.trim(), global_hourly_limit: globalLimitI.value.trim() });
               toast('Ayarlar kaydedildi'); loadProviderStatus();
             } catch (e) { toast(e.message, 'err'); }
           } }, 'Ayarları kaydet'))
@@ -2138,14 +2423,30 @@
 
   // ---------------- Init ----------------
   window.addEventListener('hashchange', route);
+  // Arka plana tıkla ya da Escape → kapat. sticky modal (kurtarma kodları) yalnız butonla kapanır.
   $('#modalBackdrop').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeModal(); // arka plana tıkla → kapat
+    if (e.target === e.currentTarget && !e.currentTarget.dataset.sticky) closeModal();
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !$('#modalBackdrop').hidden) closeModal();
+    const b = $('#modalBackdrop');
+    if (e.key === 'Escape' && !b.hidden && !b.dataset.sticky) closeModal();
+  });
+
+  // Sidebar altı: giriş yapan kullanıcı ve çıkış
+  async function loadMe() {
+    try {
+      const me = await api.get('/auth/me');
+      $('#userName').textContent = me.local ? 'yerel mod' : me.user;
+      $('#logoutBtn').hidden = !!me.local;
+    } catch { /* 401 ise req() zaten girişe yönlendirdi */ }
+  }
+  $('#logoutBtn').addEventListener('click', async () => {
+    try { await api.post('/auth/logout'); } catch { /* yine de girişe dön */ }
+    location.href = '/login';
   });
 
   if (!location.hash) location.hash = '#panel';
   route();
   loadProviderStatus();
+  loadMe();
 })();

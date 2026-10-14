@@ -69,20 +69,49 @@ function resendMonthlyUsed() {
       AND strftime('%Y-%m', i.sent_at) = strftime('%Y-%m','now')`).get().n || 0;
 }
 
+// KONTROLLÜ GÖNDERİM: sağlayıcıdan bağımsız TOPLAM saatlik üst sınır (kayan 60 dk, smtp+resend birlikte).
+// Kuyruğa "Tümünü gönder" denince hepsi bir anda gitmesin; sınır dolunca runner'lar durur, ticker (45sn)
+// pencere kayınca kaldığı yerden sürdürür → başında kimse yokken de saatte en çok N mail gider.
+function globalHourlyCap() { return caps().globalHourly; } // 0 = sınırsız
+function globalHourlyUsed() {
+  return db.prepare(`SELECT COUNT(*) n FROM send_items
+    WHERE status = 'sent' AND sent_at >= datetime('now','-60 minutes')`).get().n || 0;
+}
+function globalRemaining() {
+  const cap = globalHourlyCap();
+  if (!cap) return Infinity;
+  return limits.remaining(globalHourlyUsed(), cap);
+}
+// İki mail arası asgari bekleme (ms): 100/saat → 36 sn. Sınır kapalıysa 0.
+function globalIntervalMs() {
+  const cap = globalHourlyCap();
+  return cap ? Math.ceil(3600000 / cap) : 0;
+}
+// Pencerede en eski gönderim ne zaman düşecek (sn) — sınır doluyken UI'da "sonraki gönderim" için.
+function globalNextSlotSec() {
+  const cap = globalHourlyCap();
+  if (!cap || globalRemaining() > 0) return 0;
+  const r = db.prepare(`SELECT CAST((julianday(MIN(sent_at), '+60 minutes') - julianday('now')) * 86400 AS INTEGER) AS sec
+    FROM send_items WHERE status = 'sent' AND sent_at >= datetime('now','-60 minutes')`).get();
+  return Math.max(0, (r && r.sec) || 0);
+}
+
 // Bir sağlayıcının anlık kullanım tablosu (used/cap/remaining; resend'de aylık da).
+// remaining = sağlayıcı kalan hakkı ile TOPLAM saatlik sınırın küçüğü (tüm kararlar buradan geçer).
 function usage(provider) {
   const c = caps();
+  const g = globalRemaining();
   if (provider === 'smtp') {
     const used = smtpHourlyUsed();
     const cap = c.smtpHourly;
-    return { used, cap, remaining: limits.remaining(used, cap) };
+    return { used, cap, remaining: Math.min(limits.remaining(used, cap), g) };
   }
   const used = resendDailyUsed();
   const cap = c.resendDaily;
   const mUsed = resendMonthlyUsed();
   const mCap = c.resendMonthly;
   return {
-    used, cap, remaining: limits.remaining(used, cap),
+    used, cap, remaining: Math.min(limits.remaining(used, cap), g),
     monthlyUsed: mUsed, monthlyCap: mCap, monthlyRemaining: limits.remaining(mUsed, mCap),
   };
 }
@@ -347,6 +376,14 @@ function statusSnapshot() {
     now: new Date().toISOString(),
     smtp: providerSnapshot('smtp'),
     resend: providerSnapshot('resend'),
+    global: {
+      cap: globalHourlyCap(),
+      used: globalHourlyUsed(),
+      remaining: globalHourlyCap() ? globalRemaining() : null,
+      interval_sec: Math.round(globalIntervalMs() / 1000),
+      next_slot_sec: globalNextSlotSec(),
+      next_slot_human: globalNextSlotSec() ? humanDuration(globalNextSlotSec()) : null,
+    },
   };
 }
 
@@ -366,6 +403,9 @@ module.exports = {
   readState,
   usage,
   caps,
+  globalRemaining,
+  globalIntervalMs,
+  globalHourlyUsed,
   distributePending,
   managedPosition,
   enterCooldown,

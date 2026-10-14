@@ -27,7 +27,9 @@ function pref(key, envVal, def) {
 }
 
 // Yalnız düzenlenebilir (SIR OLMAYAN) tercihler UI'dan güncellenebilir.
-const EDITABLE = new Set(['resend_from', 'smtp_from', 'smtp_host', 'smtp_port', 'smtp_user', 'smtp_hourly_limit']);
+// UYARI: settings tablosundaki totp_* ve auth_* anahtarları services/auth.js'e aittir (şifreli 2FA
+// anahtarı, kurtarma kodu özetleri). Bu listeye ASLA eklenmez, GET yanıtına da konmaz.
+const EDITABLE = new Set(['resend_from', 'smtp_from', 'smtp_host', 'smtp_port', 'smtp_user', 'smtp_hourly_limit', 'global_hourly_limit']);
 
 // GET /api/settings → maskeli durum
 router.get('/', (req, res) => {
@@ -40,6 +42,7 @@ router.get('/', (req, res) => {
     smtp_user: pref('smtp_user', process.env.SMTP_USER, 'info@nolnk.net'),
     smtp_from: pref('smtp_from', process.env.SMTP_FROM, 'NoLnk <info@nolnk.net>'),
     smtp_hourly_limit: Number(pref('smtp_hourly_limit', process.env.SMTP_HOURLY_LIMIT, '450')),
+    global_hourly_limit: Number(pref('global_hourly_limit', process.env.GLOBAL_HOURLY_LIMIT, '100')),
     // sırların .env'de kilitli olduğunu UI'a bildir (kullanıcı .env'i düzenler)
     secrets_in_env: true,
   });
