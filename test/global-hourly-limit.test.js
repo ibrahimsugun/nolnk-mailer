@@ -21,11 +21,11 @@ test('varsayılan toplam saatlik sayaç sınırı 100', () => {
   assert.equal(balancer.caps().globalHourly, 100);
 });
 
-test('sayaç yalnız bu saatin gönderimlerini sayar, dolunca iki sağlayıcı da kapanır', () => {
-  // bu saatin başından önce (en az 1 saat önce) gidenler sayılmaz
-  seedSent(60, 61);
+test('sayaç yalnız son 60 dakikayı sayar, dolunca iki sağlayıcı da kapanır', () => {
+  // 60 dakikadan eski gidenler sayılmaz
+  seedSent(60, 61); // 61 dk önce: pencere dışı
   assert.equal(balancer.globalHourlyUsed(), 0);
-  // bu saat içinde: şimdi (saat başından sonra) gidenler
+  // son 60 dakika içinde gidenler
   const jobId = Number(db.prepare("INSERT INTO send_jobs (provider, subject, status, total) VALUES ('smtp','t','sending',0)").run().lastInsertRowid);
   const ins = db.prepare("INSERT INTO send_items (job_id, email, status, sent_at) VALUES (?, ?, 'sent', datetime('now'))");
   for (let i = 0; i < 100; i++) ins.run(jobId, `now-${i}@example.com`);
@@ -35,9 +35,9 @@ test('sayaç yalnız bu saatin gönderimlerini sayar, dolunca iki sağlayıcı d
   assert.equal(balancer.usage('resend').remaining, 0);
   assert.equal(balancer.available('smtp'), false);
   const g = balancer.statusSnapshot().global;
-  assert.ok(g.next_slot_sec >= 1 && g.next_slot_sec <= 3600);
+  assert.ok(g.next_slot_sec >= 3500 && g.next_slot_sec <= 3600);
 
-  // saat dönünce (gönderimler önceki saate düşer) sayaç sıfırlanır, gönderim açılır
+  // pencere kayınca (gönderimler 60 dk dışına düşer) yer açılır, gönderim açılır
   db.prepare("UPDATE send_items SET sent_at = datetime('now','-61 minutes') WHERE email LIKE 'now-%'").run();
   assert.equal(balancer.globalRemaining(), 100);
   assert.equal(balancer.available('smtp'), true);
