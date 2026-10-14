@@ -200,7 +200,7 @@ docker exec nolnk-mailer node scripts/reset-2fa.js
 | `SMTP_USER` `SMTP_PASS` | SMTP kimlik bilgileri |
 | `SMTP_FROM` | SMTP gönderen adresi |
 | `SMTP_HOURLY_LIMIT` | Saatlik gönderim üst sınırı, PrivateEmail için 450 |
-| `GLOBAL_HOURLY_LIMIT` | Kontrollü gönderim: PrivateEmail ve Resend toplamı için saatlik üst sınır, varsayılan 100, 0 sınırsız |
+| `GLOBAL_HOURLY_LIMIT` | Kontrollü gönderim: PrivateEmail ve Resend toplamı için saatlik mail sayacı sınırı (saat başında sıfırlanır), varsayılan 100, 0 sınırsız |
 
 ## Depoda bulunmayanlar
 

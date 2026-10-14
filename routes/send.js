@@ -252,8 +252,7 @@ async function runResendJobInner(jobId) {
       const remaining = balancer.usage('resend').remaining;
       if (!isProbe && remaining <= 0) return; // proaktif durdurma (günlük kota bitti)
       if (balancer.globalRemaining() <= 0) return; // toplam saatlik sınır (probe dahil)
-      const paceMs = balancer.globalIntervalMs(); // kontrollü gönderim açıksa mailler tek tek, aralıklı gider
-      const batchSize = (isProbe || paceMs > 0) ? 1 : Math.min(100, remaining); // probe SADECE 1 mail; kota'yı aşma
+      const batchSize = isProbe ? 1 : Math.min(100, remaining); // probe SADECE 1 mail; kota'yı aşma
       if (batchSize <= 0) return;
 
       const group = nextBatch.all(jobId, batchSize);
@@ -313,8 +312,7 @@ async function runResendJobInner(jobId) {
       db.transaction(() => { sendable.forEach((s, i) => okStmt.run((data[i] && data[i].id) || null, s.it.id)); })();
       updateCounters(jobId);
       if (isProbe) balancer.probeOk('resend', { job_id: jobId }); // probe başarılı → tam aktif
-      // istekler arası ~500ms (Resend güncel limiti 2 istek/sn — 9 Temmuz 2026 changelog); kontrollü gönderimde daha uzun
-      if (paceMs > 0 && !nextBatch.get(jobId, 1)) { /* sırada mail yok → bekleme */ } else await sleep(Math.max(500, paceMs));
+      await sleep(500); // istekler arası ~500ms (Resend güncel limiti 2 istek/sn — 9 Temmuz 2026 changelog)
     }
     finalizeJob(jobId);
   } finally {
@@ -383,7 +381,7 @@ async function runSmtpJobInner(jobId) {
       const st = balancer.readState('smtp');
       const isProbe = st.probe_pending === 1;
       if (!isProbe && balancer.usage('smtp').remaining <= 0) return; // proaktif durdurma (saatlik limit)
-      if (balancer.globalRemaining() <= 0) return; // toplam saatlik sınır (probe dahil) — ticker pencere kayınca sürdürür
+      if (balancer.globalRemaining() <= 0) return; // toplam saatlik sayaç sınırı (probe dahil) — ticker saat başında sürdürür
 
       const it = nextPending.get(jobId);
       if (!it) break; // bitti
@@ -429,7 +427,7 @@ async function runSmtpJobInner(jobId) {
       updateCounters(jobId);
 
       // Throttle: sıradaki mail varsa bekle
-      if (hasPending.get(jobId)) await sleep(Math.max(delay, balancer.globalIntervalMs()));
+      if (hasPending.get(jobId)) await sleep(delay);
     }
     finalizeJob(jobId);
   } finally {

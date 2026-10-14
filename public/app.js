@@ -1638,9 +1638,8 @@
     if (!g || !g.cap) return null;
     return h('div', { class: 'balancer-line' },
       h('b', {}, 'Kontrollü gönderim: '),
-      h('span', {}, g.used + '/' + g.cap + ' son 60 dk'),
-      h('span', { class: 'muted' }, '· ~' + g.interval_sec + ' sn arayla'),
-      g.next_slot_sec ? h('span', { class: 'badge badge-warn' }, 'sıradaki gönderim ' + g.next_slot_human + ' sonra') : h('span', { class: 'badge badge-green' }, 'akıyor')
+      h('span', {}, g.used + '/' + g.cap + ' bu saat'),
+      g.next_slot_sec ? h('span', { class: 'badge badge-warn' }, 'limit doldu — sayaç ' + g.next_slot_human + ' sonra sıfırlanır') : h('span', { class: 'badge badge-green' }, 'akıyor')
     );
   }
   function balancerProviderLine(info, label, showMonthly) {
@@ -2333,7 +2332,7 @@
         ),
         h('div', { class: 'card mb-2' },
           h('div', { class: 'card-title' }, 'Kontrollü gönderim'),
-          h('div', { class: 'card-hint' }, 'Kuyrukta "Tümünü gönder" denince mailler tek seferde gitmez; PrivateEmail ve Resend toplamı bu sınırı aşmaz, mailler eşit aralıkla (100/saat → ~36 sn) kendiliğinden sürer. Başında olmasan da devam eder. 0 = sınırsız.'),
+          h('div', { class: 'card-hint' }, 'PrivateEmail ve Resend kendi hız ve limitleriyle çalışmaya devam eder. Bu sayaç ek olarak her saat içinde giden mailleri toplam sayar; sınıra gelince gönderim durur, saat başında sayaç sıfırlanır ve kaldığı yerden sürer (başında olmasan da). 0 = sınırsız.'),
           h('div', { class: 'grid grid-2' }, field('Toplam saatlik limit (mail/saat)', globalLimitI))
         ),
         suppressionCard(),

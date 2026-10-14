@@ -37,7 +37,7 @@ function providerCaps(getSetting) {
   if (smtpHourly === null) smtpHourly = pozitifSayiYaDaNull(process.env.SMTP_HOURLY_LIMIT);
   if (smtpHourly === null) smtpHourly = CAPS.smtpHourlyDefault;
 
-  // TOPLAM saatlik üst sınır (smtp+resend birlikte): ayar > env > 100. 0 = sınırsız.
+  // TOPLAM saatlik sayaç sınırı (smtp+resend birlikte, saat başında sıfırlanır): ayar > env > 100. 0 = sınırsız.
   let globalHourly = null;
   if (typeof getSetting === 'function') {
     try {

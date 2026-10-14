@@ -69,31 +69,25 @@ function resendMonthlyUsed() {
       AND strftime('%Y-%m', i.sent_at) = strftime('%Y-%m','now')`).get().n || 0;
 }
 
-// KONTROLLÜ GÖNDERİM: sağlayıcıdan bağımsız TOPLAM saatlik üst sınır (kayan 60 dk, smtp+resend birlikte).
-// Kuyruğa "Tümünü gönder" denince hepsi bir anda gitmesin; sınır dolunca runner'lar durur, ticker (45sn)
-// pencere kayınca kaldığı yerden sürdürür → başında kimse yokken de saatte en çok N mail gider.
+// KONTROLLÜ GÖNDERİM: sağlayıcı hızlarından bağımsız TOPLAM saatlik sayaç (smtp+resend birlikte).
+// Gönderim hızını DEĞİŞTİRMEZ; yalnız saat içinde giden mailleri mekanik sayar. Sınıra gelince runner'lar
+// durur, saat başında (UTC saat dilimi, TR'de de tam saat) sayaç sıfırlanır ve ticker (45sn) kaldığı yerden sürdürür.
 function globalHourlyCap() { return caps().globalHourly; } // 0 = sınırsız
 function globalHourlyUsed() {
   return db.prepare(`SELECT COUNT(*) n FROM send_items
-    WHERE status = 'sent' AND sent_at >= datetime('now','-60 minutes')`).get().n || 0;
+    WHERE status = 'sent' AND sent_at >= strftime('%Y-%m-%d %H:00:00','now')`).get().n || 0;
 }
 function globalRemaining() {
   const cap = globalHourlyCap();
   if (!cap) return Infinity;
   return limits.remaining(globalHourlyUsed(), cap);
 }
-// İki mail arası asgari bekleme (ms): 100/saat → 36 sn. Sınır kapalıysa 0.
-function globalIntervalMs() {
-  const cap = globalHourlyCap();
-  return cap ? Math.ceil(3600000 / cap) : 0;
-}
-// Pencerede en eski gönderim ne zaman düşecek (sn) — sınır doluyken UI'da "sonraki gönderim" için.
+// Sayaç sıfırlanana (bir sonraki tam saate) kalan sn — sınır doluyken UI'da "sonraki gönderim" için.
 function globalNextSlotSec() {
   const cap = globalHourlyCap();
   if (!cap || globalRemaining() > 0) return 0;
-  const r = db.prepare(`SELECT CAST((julianday(MIN(sent_at), '+60 minutes') - julianday('now')) * 86400 AS INTEGER) AS sec
-    FROM send_items WHERE status = 'sent' AND sent_at >= datetime('now','-60 minutes')`).get();
-  return Math.max(0, (r && r.sec) || 0);
+  const r = db.prepare("SELECT CAST((julianday(strftime('%Y-%m-%d %H:00:00','now'), '+1 hour') - julianday('now')) * 86400 AS INTEGER) AS sec").get();
+  return Math.max(1, (r && r.sec) || 0);
 }
 
 // Bir sağlayıcının anlık kullanım tablosu (used/cap/remaining; resend'de aylık da).
@@ -380,7 +374,6 @@ function statusSnapshot() {
       cap: globalHourlyCap(),
       used: globalHourlyUsed(),
       remaining: globalHourlyCap() ? globalRemaining() : null,
-      interval_sec: Math.round(globalIntervalMs() / 1000),
       next_slot_sec: globalNextSlotSec(),
       next_slot_human: globalNextSlotSec() ? humanDuration(globalNextSlotSec()) : null,
     },
@@ -404,7 +397,6 @@ module.exports = {
   usage,
   caps,
   globalRemaining,
-  globalIntervalMs,
   globalHourlyUsed,
   distributePending,
   managedPosition,
